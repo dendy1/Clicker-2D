@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
     private int currentObject = 0;
     
     [Header("Health Settings")]
-    [SerializeField] private float healthBar = 1f;
+    private float healthBar = 1f;
     [SerializeField] private float healthClick = 0.2f;
     [SerializeField] private float healthMiss = 0.2f;
     [SerializeField] private float healthRate = 0.005f;
@@ -65,7 +65,6 @@ public class GameManager : MonoBehaviour
 
     private List<Circle> Parser(string path)
     {
-
         StreamReader reader = new StreamReader(path);
         List<string> hitObjects = new List<string>();
 
@@ -94,7 +93,10 @@ public class GameManager : MonoBehaviour
         {
             string[] circleParams = hitObjects[i].Split(',');
             
-            Vector3 screenPos = new Vector3(int.Parse(circleParams[0]),  384 - int.Parse(circleParams[1]), 0);
+            Vector3 screenPos = new Vector3(
+                int.Parse(circleParams[0]),  
+                384 - int.Parse(circleParams[1]), 
+                0);
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
             
             Circle newCircle = new Circle(
@@ -130,6 +132,7 @@ public class GameManager : MonoBehaviour
         score = 0;
         healthBar = 1f;
         gameOverText.text = "";
+        currentObject = 0;
         StartCoroutine("UpdateCoroutine");
         StartCoroutine("Checker");
     }
