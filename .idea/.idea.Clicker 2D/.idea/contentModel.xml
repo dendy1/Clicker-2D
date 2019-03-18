@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Projects\Unity\Clicker 2D" t="IncludeRecursive">
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="Classes" t="Include">
+          <e p="Circle.cs" t="Include" />
+        </e>
+        <e p="Scripts" t="Include">
+          <e p="ApproachCircle.cs" t="Include" />
+          <e p="GameManager.cs" t="Include" />
+          <e p="HitCircle.cs" t="Include" />
+        </e>
+        <e p="Skin" t="Include">
+          <e p="- Seoul.v9 MPikazo" t="Include">
+            <e p="artists.txt" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="Clicker 2D.sln" t="IncludeFlat" />
+      <e p="Library" t="ExcludeRecursive" />
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="Temp" t="ExcludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+      </e>
+    </e>
+    <e p="C:\Users\Andrey\.Rider2018.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\Andrey\.Rider2018.3\system\resharper-host\local\Transient\ReSharperHost\v183\SolutionCaches\_Clicker 2D.677475468.00" t="ExcludeRecursive" />
+  </component>
+</project>
