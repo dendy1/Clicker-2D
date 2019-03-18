@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     [Header("Text Fields")]
     [SerializeField] private Text healthText;
     [SerializeField] private Text scoreText;
+    [SerializeField] private Text gameOverText;
 
     [Header("Audio Players")]
     private AudioSource hitPlayer;
@@ -121,6 +122,16 @@ public class GameManager : MonoBehaviour
         circle.GetComponent<HitCircle>().Clicked += HitCircleClicked;
         circle.GetComponent<HitCircle>().Dead += HitCircleDead;
         StartCoroutine("UpdateCoroutine");
+        StartCoroutine("Checker");
+    }
+
+    private void RestartGame()
+    {
+        score = 0;
+        healthBar = 1f;
+        gameOverText.text = "";
+        StartCoroutine("UpdateCoroutine");
+        StartCoroutine("Checker");
     }
 
     private IEnumerator UpdateCoroutine()
@@ -143,6 +154,28 @@ public class GameManager : MonoBehaviour
                 currentObject++;
             }
 
+            yield return null;
+        }    
+        
+        yield return new WaitForSeconds(9f);
+        musicPlayer.Stop();
+        StartCoroutine("Restart");
+    }
+
+    private IEnumerator Restart()
+    {
+        if (healthBar <= 0)
+            gameOverText.text = "ВЫ ПРОИГРАЛИ!!";
+        else
+            gameOverText.text = "ВЫ ПОБЕДИЛИ!!";
+        yield return new WaitForSeconds(5f);
+        RestartGame();
+    }
+
+    private IEnumerator Checker()
+    {
+        while (musicPlayer.isPlaying)
+        {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast (ray.origin, ray.direction, Mathf.Infinity);
 
@@ -159,11 +192,31 @@ public class GameManager : MonoBehaviour
             }
 
             yield return null;
-        }    
-        
-        musicPlayer.Stop();
+        }
     }
 
+    private void HitCircleClicked(float ptsScale)
+    {
+        if (healthBar + healthClick < 1.0f)
+            healthBar += healthClick;
+        else
+            healthBar = 1;
+
+        score += (int)(baseClickPoints / ptsScale) * scoreScale;
+        hitPlayer.Play();
+    }
+    
+    private void HitCircleDead(float ptsScale)
+    {
+        if (healthBar - healthMiss > 0)
+            healthBar -= healthMiss;
+        else
+            healthBar = 0;
+        
+        if (score > 0)
+            score -= (int)(baseMissPoints / ptsScale) * scoreScale;
+    }
+    
     private static float GetApproachRateMs(int ar)
     {
         switch (ar)
@@ -192,27 +245,5 @@ public class GameManager : MonoBehaviour
                 return 450;
         }
         throw new Exception();
-    }
-
-    private void HitCircleClicked(float ptsScale)
-    {
-        if (healthBar + healthClick < 1.0f)
-            healthBar += healthClick;
-        else
-            healthBar = 1;
-
-        score += (int)(baseClickPoints / ptsScale) * scoreScale;
-        hitPlayer.Play();
-    }
-    
-    private void HitCircleDead(float ptsScale)
-    {
-        if (healthBar - healthMiss > 0)
-            healthBar -= healthMiss;
-        else
-            healthBar = 0;
-        
-        if (score > 0)
-            score -= (int)(baseMissPoints / ptsScale) * scoreScale;
     }
 }
