@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -14,11 +10,11 @@ public class GameManager : MonoBehaviour
 {
     [Header("Map Settings")]
     [SerializeField] private DefaultAsset mapFile; 
-    [SerializeField] private AudioClip songFile;
     [SerializeField] private GameObject circle; //HitCircle Prefab
     [SerializeField] private float musicOffset; //Offset in ms
     [SerializeField] private float dieOffset; //HitCircle die offset in ms
     [SerializeField] private AudioClip hitFile;
+    private AudioClip songFile;
 
     [Header("Text Fields")]
     [SerializeField] private Text healthText;
@@ -29,10 +25,10 @@ public class GameManager : MonoBehaviour
     private AudioSource hitPlayer;
     private AudioSource musicPlayer;
     public VideoPlayer vp;
-    
-    public static float ApproachRate { get; set; } = GetApproachRateMs(4); //ApproachRate in ms
 
-    private List<Circle> circlesRaw;
+    private static float approachRate;
+
+    private List<Circle> osuObjects;
     private int currentObject = 0;
     
     [Header("Health Settings")]
@@ -50,10 +46,9 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        circlesRaw = new List<Circle>();
+        osuObjects = new List<Circle>();
         musicPlayer = gameObject.AddComponent<AudioSource>();
         hitPlayer = gameObject.AddComponent<AudioSource>();
-        musicPlayer.clip = songFile;
         hitPlayer.clip = hitFile;
         vp.Play();
         StartGame();
@@ -67,67 +62,21 @@ public class GameManager : MonoBehaviour
             healthBar -= healthRate / 200;
     }
 
-    private List<Circle> Parser(string path)
-    {
-        StreamReader reader = new StreamReader(path);
-        List<string> hitObjects = new List<string>();
-
-        //Skip to [HitObjects] section
-        while (reader.ReadLine() != "[HitObjects]"){ }
-
-        while (true)
-        {
-            string line = reader.ReadLine();
-            
-            if (line == null)
-                break;
-            
-            hitObjects.Add(line);
-        }
-        
-        //Removing sliders
-        for (int i = 0; i < hitObjects.Count; i++)
-        {
-            if (hitObjects[i].Contains("|"))
-                hitObjects.RemoveAt(i);
-        }
-        
-        List<Circle> hitCircles = new List<Circle>();
-        for (int i = 0; i < hitObjects.Count - 1; i++)
-        {
-            string[] circleParams = hitObjects[i].Split(',');
-
-            int desiredX = Mathf.RoundToInt(int.Parse(circleParams[0]) / 512f * Screen.width);
-            int desiredY = Mathf.RoundToInt((384 - int.Parse(circleParams[1])) / 384f * Screen.height);
-            
-            
-            Vector3 screenPos = new Vector3(desiredX, desiredY, 0);
-            Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
-            
-            Circle newCircle = new Circle(
-                worldPos.x, 
-                worldPos.y, 
-                int.Parse(circleParams[2])
-            );
-            
-            hitCircles.Add(newCircle);
-        }
-       
-        reader.Close();
-        return hitCircles;
-    }
-
     private void SetHitCircles()
     {
         string path = AssetDatabase.GetAssetPath(mapFile);
-        circlesRaw = Parser(path);
+        Parser parser = new Parser();
+        
+        osuObjects = parser.Parse(path, out songFile, out approachRate);
+        musicPlayer.clip = songFile;
+        
+        circle.GetComponent<HitCircle>().Clicked += HitCircleClicked;
+        circle.GetComponent<HitCircle>().Dead += HitCircleDead;
     }
 
     private void StartGame()
     {
         SetHitCircles();
-        circle.GetComponent<HitCircle>().Clicked += HitCircleClicked;
-        circle.GetComponent<HitCircle>().Dead += HitCircleDead;
         StartCoroutine("UpdateCoroutine");
         StartCoroutine("Checker");
     }
@@ -147,12 +96,12 @@ public class GameManager : MonoBehaviour
         float zbuffer = -0.000001f;
         float bufferS = 0.0001f;
         musicPlayer.PlayDelayed(musicOffset / 1000);
-        while (currentObject != circlesRaw.Count - 1 && healthBar > 0f)
+        while (currentObject != osuObjects.Count - 1 && healthBar > 0f)
         {
-            Circle current = circlesRaw[currentObject];
+            Circle current = osuObjects[currentObject];
             double timer = musicPlayer.time;
-            double delay = (current.Time - ApproachRate) / 1000f;
-            
+            double delay = (current.Time - GetPreemt()) / 1000f;
+        
             if (timer >= delay)
             {
                 zbuffer += bufferS;
@@ -163,11 +112,12 @@ public class GameManager : MonoBehaviour
                 comp.dieOffset = dieOffset;
                 currentObject++;
             }
-
             yield return null;
-        }    
-        
-        yield return new WaitForSeconds(9f);
+        }
+
+        while (musicPlayer.isPlaying && healthBar > 0)
+            yield return null;
+         
         musicPlayer.Stop();
         StartCoroutine("Restart");
     }
@@ -200,7 +150,6 @@ public class GameManager : MonoBehaviour
                     Destroy(hit.transform.gameObject);
                 }
             }
-
             yield return null;
         }
     }
@@ -226,34 +175,34 @@ public class GameManager : MonoBehaviour
         if (score > 0)
             score -= (int)(baseMissPoints / ptsScale) * scoreScale;
     }
-    
-    private static float GetApproachRateMs(int ar)
+
+    public static float GetPreemt()
     {
-        switch (ar)
+        if (approachRate < 5)
         {
-            case 0:
-                return 1800;
-            case 1:
-                return 1680;
-            case 2:
-                return 1560;
-            case 3:
-                return 1440;
-            case 4:
-                return 1320;
-            case 5:
-                return 1200;
-            case 6:
-                return 1050;
-            case 7:
-                return 900;
-            case 8:
-                return 750;
-            case 9:
-                return 600;
-            case 10:
-                return 450;
+            return 1200 + 600 * (5 - approachRate) / 5f;
         }
-        throw new Exception();
+
+        if (approachRate == 5)
+        {
+            return 1200;
+        }
+        
+        return 1200 - 750 * (approachRate - 5) / 5f;
+    }
+    
+    public static float GetFadein()
+    {
+        if (approachRate < 5)
+        {
+            return 800 + 400 * (5 - approachRate) / 5f;
+        }
+
+        if (approachRate == 5)
+        {
+            return 800;
+        }
+        
+        return 800 - 500 * (approachRate - 5) / 5f;
     }
 }

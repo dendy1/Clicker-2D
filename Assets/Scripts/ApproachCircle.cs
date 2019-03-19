@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
+﻿using UnityEngine;
 
 public class ApproachCircle : MonoBehaviour
 {
@@ -16,7 +12,7 @@ public class ApproachCircle : MonoBehaviour
         currentScale = transform.localScale;
         
         float delta = currentScale.x - minScale;
-        step = delta / (GameManager.ApproachRate / 20);
+        step = delta / (GameManager.GetPreemt() / 20);
     }
 
     void FixedUpdate()

@@ -1,9 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
-using UnityEngine.Networking.NetworkSystem;
-using UnityEngine.Serialization;
 
 public class HitCircle : MonoBehaviour
 {
@@ -14,13 +10,14 @@ public class HitCircle : MonoBehaviour
     
     public float MinScale { get; set; } = 0.86f;
 
+    private float fadein;
     public float Scale
     {
         get { return approachCircleTransform.localScale.x; }
     }
 
-    private Color circleColor, approachColor;
-    private SpriteRenderer circleSR, approachSR;
+    private Color circleColor, approachColor, overlayColor;
+    private SpriteRenderer circleSR, approachSR, overlaySR;
     private Transform approachCircleTransform;
     
     void Start()
@@ -29,30 +26,45 @@ public class HitCircle : MonoBehaviour
         
         circleSR = GetComponent<SpriteRenderer>();
         approachSR = transform.GetChild(0).GetComponent<SpriteRenderer>();
-
+        overlaySR = transform.GetChild(1).GetComponent<SpriteRenderer>();
+        
         circleColor = circleSR.material.color;
         approachColor = approachSR.material.color;
+        overlayColor = overlaySR.material.color;
         
         circleColor.a = 0f;
         approachColor.a = 0f;
+        overlayColor.a = 0f;
         
         circleSR.material.color = circleColor;
         approachSR.material.color = approachColor;
+        overlaySR.material.color = overlayColor;
+
+        fadein = GameManager.GetFadein();
+        Debug.Log(GameManager.GetPreemt() + "|||" + GameManager.GetFadein());
+        StartCoroutine("FadeIn");
     }
 
     void Update()
     {
-        if (approachCircleTransform.localScale.x > MinScale)
+        if (approachCircleTransform.localScale.x < MinScale)
+            StartCoroutine("Die");
+    }
+
+    private IEnumerator FadeIn()
+    {
+        while (circleColor.a < 1f)
         {
-            circleColor.a += 4f * Time.deltaTime;
-            approachColor.a += 4f * Time.deltaTime;
+            circleColor.a += 1f / (fadein / 60);
+            approachColor.a += 1f / (fadein / 60);
+            overlayColor.a += 1f / (fadein / 60);
+            
             circleSR.material.color = circleColor;
             approachSR.material.color = approachColor;
+            overlaySR.material.color = overlayColor;
+            
+            yield return new WaitForSeconds(60 / 1000f);
         }
-        else
-        {
-            StartCoroutine("Die");
-        }  
     }
 
     private IEnumerator Die()

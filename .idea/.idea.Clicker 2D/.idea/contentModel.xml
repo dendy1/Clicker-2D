@@ -6,11 +6,14 @@
       <e p="Assets" t="Include">
         <e p="Classes" t="Include">
           <e p="Circle.cs" t="Include" />
+          <e p="OsuGameObject.cs" t="Include" />
+          <e p="Slider.cs" t="Include" />
         </e>
         <e p="Scripts" t="Include">
           <e p="ApproachCircle.cs" t="Include" />
           <e p="GameManager.cs" t="Include" />
           <e p="HitCircle.cs" t="Include" />
+          <e p="Parser.cs" t="Include" />
         </e>
         <e p="Skin" t="Include">
           <e p="- Seoul.v9 MPikazo" t="Include">
