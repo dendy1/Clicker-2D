@@ -37,9 +37,9 @@ public class GameManager : MonoBehaviour
     
     [Header("Health Settings")]
     private float healthBar = 1f;
-    [SerializeField] private float healthClick = 0f;
-    [SerializeField] private float healthMiss = 0f;
-    [SerializeField] private float healthRate = 0.00f;
+    [SerializeField] private float healthClick = 0.05f;
+    [SerializeField] private float healthMiss = 0.05f;
+    [SerializeField] private float healthRate = 0.005f;
 
     [Header("Score Settings")]
     private int score = 0;

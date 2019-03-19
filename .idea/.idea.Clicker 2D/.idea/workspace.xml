@@ -13,7 +13,7 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Assets/Scripts/GameManager.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="209">
+            <state relative-caret-position="-190">
               <caret line="21" selection-start-line="21" selection-end-line="21" />
               <folding>
                 <marker date="1552990649543" expanded="false" signature="6:285" ph="..." />
@@ -206,12 +206,12 @@
       <workItem from="1552941898740" duration="2123000" />
       <workItem from="1552976750705" duration="2055000" />
       <workItem from="1552979411170" duration="2705000" />
-      <workItem from="1552983681416" duration="983000" />
+      <workItem from="1552983681416" duration="1225000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="62978000" />
+    <option name="totallyTimeSpent" value="63220000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -223,7 +223,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.31543624" />
@@ -345,7 +345,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Assets/Scripts/GameManager.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
+        <state relative-caret-position="-190">
           <caret line="21" selection-start-line="21" selection-end-line="21" />
           <folding>
             <marker date="1552990649543" expanded="false" signature="6:285" ph="..." />
