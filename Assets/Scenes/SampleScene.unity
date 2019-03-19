@@ -324,16 +324,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8a1c59166d295441ab096b6ee545007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapFile: {fileID: 102900000, guid: 4a647c6adcb75a5449e973fda76e54dd, type: 3}
-  songFile: {fileID: 8300000, guid: f29f9df51674f1f4aa6036ee9719b70b, type: 3}
+  mapFile: {fileID: 102900000, guid: 51ba7fe337a29a442b23b07ef557a4de, type: 3}
+  songFile: {fileID: 8300000, guid: e34147b2372e9f845b3cbc368ceab976, type: 3}
   circle: {fileID: 4643609098552653776, guid: d1d2a1ab6a8d7ed44879f3e56e647a32, type: 3}
-  musicOffset: 500
+  musicOffset: 0
+  dieOffset: 100
   hitFile: {fileID: 8300000, guid: 5e7aff72909b96346bcf909c8294010c, type: 3}
   healthText: {fileID: 638179850}
   scoreText: {fileID: 625996257}
   gameOverText: {fileID: 1108178409}
-  healthClick: 0.2
-  healthMiss: 0.2
+  healthClick: 0
+  healthMiss: 0
   healthRate: 0.005
   baseClickPoints: 10
   baseMissPoints: 10
@@ -875,6 +876,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalScale.z
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4643609098552653778, guid: d1d2a1ab6a8d7ed44879f3e56e647a32,
+        type: 3}
+      propertyPath: dieOffset
+      value: 8000
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d1d2a1ab6a8d7ed44879f3e56e647a32, type: 3}

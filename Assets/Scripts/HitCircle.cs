@@ -10,8 +10,9 @@ public class HitCircle : MonoBehaviour
     public delegate void ClickAction(float ptsScale);
     public event ClickAction Clicked;
     public event ClickAction Dead;
+    public float dieOffset = 100f;// ms
     
-    public float MinScale { get; set; } = 0.5f;
+    public float MinScale { get; set; } = 0.86f;
 
     public float Scale
     {
@@ -20,10 +21,8 @@ public class HitCircle : MonoBehaviour
 
     private Color circleColor, approachColor;
     private SpriteRenderer circleSR, approachSR;
-
     private Transform approachCircleTransform;
     
-    // Start is called before the first frame update
     void Start()
     {
         approachCircleTransform = transform.GetChild(0);
@@ -41,7 +40,6 @@ public class HitCircle : MonoBehaviour
         approachSR.material.color = approachColor;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (approachCircleTransform.localScale.x > MinScale)
@@ -53,10 +51,15 @@ public class HitCircle : MonoBehaviour
         }
         else
         {
-            if (Dead != null)
-                Dead(approachCircleTransform.localScale.x);
-            
-            Destroy(gameObject);
+            StartCoroutine("Die");
         }  
+    }
+
+    private IEnumerator Die()
+    {
+        yield return new WaitForSeconds(dieOffset/1000f);
+        if (Dead != null)
+            Dead(approachCircleTransform.localScale.x);
+        Destroy(gameObject);  
     }
 }

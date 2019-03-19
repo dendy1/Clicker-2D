@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip songFile;
     [SerializeField] private GameObject circle; //HitCircle Prefab
     [SerializeField] private float musicOffset; //Offset in ms
+    [SerializeField] private float dieOffset; //HitCircle die offset in ms
     [SerializeField] private AudioClip hitFile;
 
     [Header("Text Fields")]
@@ -34,9 +35,9 @@ public class GameManager : MonoBehaviour
     
     [Header("Health Settings")]
     private float healthBar = 1f;
-    [SerializeField] private float healthClick = 0.2f;
-    [SerializeField] private float healthMiss = 0.2f;
-    [SerializeField] private float healthRate = 0.005f;
+    [SerializeField] private float healthClick = 0f;
+    [SerializeField] private float healthMiss = 0f;
+    [SerializeField] private float healthRate = 0.00f;
 
     [Header("Score Settings")]
     private int score = 0;
@@ -92,11 +93,12 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < hitObjects.Count - 1; i++)
         {
             string[] circleParams = hitObjects[i].Split(',');
+
+            int desiredX = Mathf.RoundToInt(int.Parse(circleParams[0]) / 512f * Screen.width);
+            int desiredY = Mathf.RoundToInt((384 - int.Parse(circleParams[1])) / 384f * Screen.height);
             
-            Vector3 screenPos = new Vector3(
-                int.Parse(circleParams[0]),  
-                384 - int.Parse(circleParams[1]), 
-                0);
+            
+            Vector3 screenPos = new Vector3(desiredX, desiredY, 0);
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
             
             Circle newCircle = new Circle(
@@ -152,8 +154,10 @@ public class GameManager : MonoBehaviour
             {
                 zbuffer += bufferS;
                 GameObject temp = Instantiate(circle, new Vector3(current.X, current.Y, zbuffer), Quaternion.identity);
-                temp.GetComponent<HitCircle>().Clicked += HitCircleClicked;
-                temp.GetComponent<HitCircle>().Dead += HitCircleDead;
+                var comp = temp.GetComponent<HitCircle>();
+                comp.Clicked += HitCircleClicked;
+                comp.Dead += HitCircleDead;
+                comp.dieOffset = dieOffset;
                 currentObject++;
             }
 

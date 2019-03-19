@@ -8,10 +8,8 @@ public class ApproachCircle : MonoBehaviour
 {
     private Vector3 currentScale;
     private float step;
-
     private float minScale;
     
-    // Start is called before the first frame update
     void Start()
     {
         minScale = transform.GetComponentInParent<HitCircle>().MinScale;
@@ -21,7 +19,6 @@ public class ApproachCircle : MonoBehaviour
         step = delta / (GameManager.ApproachRate / 20);
     }
 
-    // FixedUpdate is called once each 20 ms
     void FixedUpdate()
     {
         if (currentScale.x > minScale)

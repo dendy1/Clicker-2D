@@ -3,7 +3,7 @@
 public class Circle
 {
     /// <summary>
-    /// Position of the center of the hit/
+    /// Position of the center of the hit
     /// X ranges from 0 to 512 pixels, inclusive.
     /// Y ranges from 0 to 384 pixels, inclusive.
     /// The origin, (0, 0) is at the top left of the screen.
