@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,7 +28,8 @@ public class GameManager : MonoBehaviour
     [Header("Audio Players")]
     private AudioSource hitPlayer;
     private AudioSource musicPlayer;
-
+    public VideoPlayer vp;
+    
     public static float ApproachRate { get; set; } = GetApproachRateMs(4); //ApproachRate in ms
 
     private List<Circle> circlesRaw;
@@ -46,13 +48,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int scoreScale = 10;
 
     // Start is called before the first frame update
-    void Start()  
+    void Start()
     {
         circlesRaw = new List<Circle>();
         musicPlayer = gameObject.AddComponent<AudioSource>();
         hitPlayer = gameObject.AddComponent<AudioSource>();
         musicPlayer.clip = songFile;
         hitPlayer.clip = hitFile;
+        vp.Play();
         StartGame();
     }
 
