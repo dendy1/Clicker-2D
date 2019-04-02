@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/SongSelection.unity
+    guid: e6c6eb19cb9709242985de7789927b82
+  - enabled: 1
+    path: Assets/Scenes/MainScene.unity
+    guid: ba2fba9a6a6a8d341a7e61691b0777e5
   m_configObjects: {}

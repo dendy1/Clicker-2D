@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.Video;
+using Debug = UnityEngine.Debug;
 
 public class GameManager : MonoBehaviour
 {       
     public static GameManager Instance { get; set; }
     
     [Header("Map Settings")]
-    [SerializeField] private DefaultAsset mapFile; 
+    //public static DefaultAsset mapFile;
+
+    public static string mapPath;
     [SerializeField] private GameObject circle; //HitCircle Prefab
     [SerializeField] private float musicOffset; //Offset in ms
     [SerializeField] private float dieOffset; //HitCircle die offset in ms
     
     [SerializeField] private AudioClip hitSound;
     [SerializeField] private AudioClip missSound;
-    [SerializeField] private AudioClip songFile;
+    [SerializeField] private Button returnButton;
+    [SerializeField] private Button restartButton;
 
     public Slider sliderBar;
     public Text scoreText;
@@ -30,7 +35,6 @@ public class GameManager : MonoBehaviour
     [Header("Audio Players")]
     private AudioSource _notePlayer;
     private AudioSource _musicPlayer;
-    public VideoPlayer vp;
 
     private float _approachRate;
 
@@ -69,22 +73,22 @@ public class GameManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_currentHealth > 0)
+        if (_currentHealth > 0 && _currentObject < _osuObjects.Count)
         {
             _currentHealth -= healthDecreasingRate / 200;
             sliderBar.value = _currentHealth;
         }
-
     }
 
     private void SetHitCircles()
     {
-        string path = AssetDatabase.GetAssetPath(mapFile);
+        //string path = AssetDatabase.GetAssetPath(mapFile);
         Parser parser = new Parser();
 
         AudioClip temp;
-        _osuObjects = parser.Parse(path, out temp, out _approachRate);
-        _musicPlayer.clip = songFile;
+        Debug.Log(mapPath);
+        _osuObjects = parser.Parse(mapPath, out temp, out _approachRate);
+        _musicPlayer.clip = temp;
     }
 
     private void StartGame()
@@ -94,11 +98,13 @@ public class GameManager : MonoBehaviour
         StartCoroutine("MouseChecker");
     }
 
-    private void RestartGame()
+    public void RestartGame()
     {
         _currentScore = 0;
         _currentHealth = 1f;
         _currentObject = 0;
+        returnButton.gameObject.SetActive(false);
+        restartButton.gameObject.SetActive(false);
         StartCoroutine("UpdateCoroutine");
     }
 
@@ -126,10 +132,12 @@ public class GameManager : MonoBehaviour
         }
 
         while (_musicPlayer.isPlaying && _currentHealth > 0)
+        {
             yield return null;
-         
-        _musicPlayer.Stop();
-        StartCoroutine("Restart");
+        }
+
+        returnButton.gameObject.SetActive(true);
+        restartButton.gameObject.SetActive(true);
     }
 
     private IEnumerator MouseChecker()
@@ -156,6 +164,11 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(5f);
         RestartGame();
+    }
+
+    public void ReturnToMenu()
+    {
+        Application.LoadLevel("SongSelection");
     }
 
     public void BadHit()

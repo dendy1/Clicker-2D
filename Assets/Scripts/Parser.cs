@@ -16,20 +16,20 @@ public class Parser
         
         // Getting song file
         // Skip to [General] section
-        /* while (reader.ReadLine() != "[General]"){ }
+        while (reader.ReadLine() != "[General]"){ }
         string filename = reader.ReadLine();
         filename = filename.Substring(15, filename.Length - 15);
 
-        string songpath = path;
+        string songpath = path.Replace('\\', '/');
+        Debug.Log(songpath);
         for (int i = songpath.Length - 1; i > 0; --i)
         {
             if (songpath[i] == '/')
                 break;
             songpath = songpath.Remove(i);
         }
-        songpath = songpath.Substring(6, songpath.Length - 6);
 
-        string[] files = Directory.GetFiles(Application.dataPath + songpath, "*.mp3");
+        string[] files = Directory.GetFiles(songpath, "*.mp3");
         
         foreach (var song in files)
         {
@@ -38,7 +38,7 @@ public class Parser
                 music = LoadSong(song);
             }
         }
-        */
+        
         
         // Skip to [Difficulty] section
         while (reader.ReadLine() != "[Difficulty]"){ }
