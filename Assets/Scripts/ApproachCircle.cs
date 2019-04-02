@@ -12,7 +12,7 @@ public class ApproachCircle : MonoBehaviour
         currentScale = transform.localScale;
         
         float delta = currentScale.x - minScale;
-        step = delta / (GameManager.GetPreemt() / 20);
+        step = delta / (GameManager.Instance.Preemt / 20);
     }
 
     void FixedUpdate()

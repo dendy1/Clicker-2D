@@ -1,77 +1,70 @@
 ﻿using System.Collections;
+using DG.Tweening;
 using UnityEngine;
+
 
 public class HitCircle : MonoBehaviour
 {
-    public delegate void ClickAction(float ptsScale);
-    public event ClickAction Clicked;
+    public delegate void ClickAction();
     public event ClickAction Dead;
-    public float dieOffset = 100f;// ms
+    public float dieOffset;// ms
+    public float MinScale { get; } = 0.95f;
     
-    public float MinScale { get; set; } = 0.86f;
-
-    private float fadein;
+    private float _fadeInTime;
+    private bool _dead;
+    
     public float Scale
     {
-        get { return approachCircleTransform.localScale.x; }
+        get { return _approachCircleTransform.localScale.x; }
     }
-
-    private Color circleColor, approachColor, overlayColor;
-    private SpriteRenderer circleSR, approachSR, overlaySR;
-    private Transform approachCircleTransform;
+    
+    private Transform _approachCircleTransform;
     
     void Start()
     {
-        approachCircleTransform = transform.GetChild(0);
+        _fadeInTime = GameManager.Instance.FadeIn;
+        _approachCircleTransform = transform.GetChild(0);
         
-        circleSR = GetComponent<SpriteRenderer>();
-        approachSR = transform.GetChild(0).GetComponent<SpriteRenderer>();
-        overlaySR = transform.GetChild(1).GetComponent<SpriteRenderer>();
+        SpriteRenderer approachSr = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        SpriteRenderer overlaySr = transform.GetChild(1).GetComponent<SpriteRenderer>();
+        SpriteRenderer circleSr = transform.GetChild(2).GetComponent<SpriteRenderer>();
         
-        circleColor = circleSR.material.color;
-        approachColor = approachSR.material.color;
-        overlayColor = overlaySR.material.color;
-        
-        circleColor.a = 0f;
-        approachColor.a = 0f;
-        overlayColor.a = 0f;
-        
-        circleSR.material.color = circleColor;
-        approachSR.material.color = approachColor;
-        overlaySR.material.color = overlayColor;
-
-        fadein = GameManager.GetFadein();
-        Debug.Log(GameManager.GetPreemt() + "|||" + GameManager.GetFadein());
-        StartCoroutine("FadeIn");
+        circleSr.DOFade(1.0f, _fadeInTime / 1000);
+        approachSr.DOFade(1.0f, _fadeInTime / 1000);
+        overlaySr.DOFade(1.0f, _fadeInTime / 1000);
     }
 
     void Update()
     {
-        if (approachCircleTransform.localScale.x < MinScale)
+        if (_approachCircleTransform.localScale.x < MinScale)
             StartCoroutine("Die");
     }
-
-    private IEnumerator FadeIn()
-    {
-        while (circleColor.a < 1f)
-        {
-            circleColor.a += 1f / (fadein / 60);
-            approachColor.a += 1f / (fadein / 60);
-            overlayColor.a += 1f / (fadein / 60);
-            
-            circleSR.material.color = circleColor;
-            approachSR.material.color = approachColor;
-            overlaySR.material.color = overlayColor;
-            
-            yield return new WaitForSeconds(60 / 1000f);
-        }
-    }
-
+    
     private IEnumerator Die()
     {
+        Debug.Log("test");
         yield return new WaitForSeconds(dieOffset/1000f);
-        if (Dead != null)
-            Dead(approachCircleTransform.localScale.x);
+        _dead = true;
+        Dead?.Invoke();
         Destroy(gameObject);  
+    }
+    
+    private void OnDestroy()
+    {
+        if (!_dead)
+        {
+            if (Mathf.Abs(Scale - MinScale) < 0.15f)
+            {
+                GameManager.Instance.PerfectHit();
+            }
+            else if (Mathf.Abs(Scale - MinScale) < 0.4f)
+            {
+                GameManager.Instance.NormalHit();
+            }
+            else
+            {
+                GameManager.Instance.BadHit();
+            }
+        }
     }
 }

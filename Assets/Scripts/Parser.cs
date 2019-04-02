@@ -6,7 +6,7 @@ using NAudio.Wave;
 
 public class Parser
 {
-    public List<Circle> Parse(string path, out AudioClip music, out float approachRate)
+    public List<CircleClass> Parse(string path, out AudioClip music, out float approachRate)
     {
         music = null;
         approachRate = 4;
@@ -16,7 +16,7 @@ public class Parser
         
         // Getting song file
         // Skip to [General] section
-        while (reader.ReadLine() != "[General]"){ }
+        /* while (reader.ReadLine() != "[General]"){ }
         string filename = reader.ReadLine();
         filename = filename.Substring(15, filename.Length - 15);
 
@@ -38,6 +38,7 @@ public class Parser
                 music = LoadSong(song);
             }
         }
+        */
         
         // Skip to [Difficulty] section
         while (reader.ReadLine() != "[Difficulty]"){ }
@@ -66,7 +67,7 @@ public class Parser
             hitObjects.Add(line);
         }
         
-        List<Circle> objects = new List<Circle>();
+        List<CircleClass> objects = new List<CircleClass>();
         
         for (int i = 0; i < hitObjects.Count - 1; i++)
         {
@@ -78,13 +79,13 @@ public class Parser
             Vector3 screenPos = new Vector3(desiredX, desiredY, 0);
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
         
-            Circle newCircle = new Circle(
+            CircleClass newCircleClass = new CircleClass(
                 worldPos.x, 
                 worldPos.y, 
                 int.Parse(circleParams[2])
             );
         
-            objects.Add(newCircle);
+            objects.Add(newCircleClass);
         }
        
         reader.Close();

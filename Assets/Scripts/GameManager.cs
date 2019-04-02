@@ -1,140 +1,140 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Globalization;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
 public class GameManager : MonoBehaviour
-{
+{       
+    public static GameManager Instance { get; set; }
+    
     [Header("Map Settings")]
     [SerializeField] private DefaultAsset mapFile; 
     [SerializeField] private GameObject circle; //HitCircle Prefab
     [SerializeField] private float musicOffset; //Offset in ms
     [SerializeField] private float dieOffset; //HitCircle die offset in ms
-    [SerializeField] private AudioClip hitFile;
-    private AudioClip songFile;
+    
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField] private AudioClip missSound;
+    [SerializeField] private AudioClip songFile;
 
-    [Header("Text Fields")]
-    [SerializeField] private Text healthText;
-    [SerializeField] private Text scoreText;
-    [SerializeField] private Text gameOverText;
-
+    public Slider sliderBar;
+    public Text scoreText;
+    public Text percentText;
+    public Texture2D cursorTexture;
+    
     [Header("Audio Players")]
-    private AudioSource hitPlayer;
-    private AudioSource musicPlayer;
+    private AudioSource _notePlayer;
+    private AudioSource _musicPlayer;
     public VideoPlayer vp;
 
-    private static float approachRate;
+    private float _approachRate;
 
-    private List<Circle> osuObjects;
-    private int currentObject = 0;
+    private List<CircleClass> _osuObjects;
+    private int _currentObject = 0;
     
     [Header("Health Settings")]
-    private float healthBar = 1f;
+    private float _currentHealth = 1f;
     [SerializeField] private float healthClick = 0.05f;
     [SerializeField] private float healthMiss = 0.05f;
-    [SerializeField] private float healthRate = 0.005f;
+    [SerializeField] private float healthDecreasingRate = 0.005f;
 
     [Header("Score Settings")]
-    private int score = 0;
-    [SerializeField] private float baseClickPoints = 10.0f;
-    [SerializeField] private float baseMissPoints = 10.0f;
-    [SerializeField] private int scoreScale = 10;
+    private int _currentScore = 0;
+
+    private int _badHitScore = 50;
+    private int _normalHitScore = 100;
+    private int _perfectHitScore = 300;
 
     // Start is called before the first frame update
     void Start()
     {
-        osuObjects = new List<Circle>();
-        musicPlayer = gameObject.AddComponent<AudioSource>();
-        hitPlayer = gameObject.AddComponent<AudioSource>();
-        hitPlayer.clip = hitFile;
-        vp.Play();
+        _osuObjects = new List<CircleClass>();
+        _musicPlayer = gameObject.AddComponent<AudioSource>();
+        _notePlayer = gameObject.AddComponent<AudioSource>();
+        _notePlayer.clip = hitSound;
+        
+        Cursor.SetCursor(cursorTexture,  new Vector2(cursorTexture.width / 2, cursorTexture.height / 2), CursorMode.Auto);
         StartGame();
+    }
+    
+    private void Awake()
+    {
+        Instance = this;
     }
 
     private void FixedUpdate()
     {
-        healthText.text = "Health: " + healthBar;
-        scoreText.text = "Score: " + score;
-        if (healthBar > 0)
-            healthBar -= healthRate / 200;
+        if (_currentHealth > 0)
+        {
+            _currentHealth -= healthDecreasingRate / 200;
+            sliderBar.value = _currentHealth;
+        }
+
     }
 
     private void SetHitCircles()
     {
         string path = AssetDatabase.GetAssetPath(mapFile);
         Parser parser = new Parser();
-        
-        osuObjects = parser.Parse(path, out songFile, out approachRate);
-        musicPlayer.clip = songFile;
-        
-        circle.GetComponent<HitCircle>().Clicked += HitCircleClicked;
-        circle.GetComponent<HitCircle>().Dead += HitCircleDead;
+
+        AudioClip temp;
+        _osuObjects = parser.Parse(path, out temp, out _approachRate);
+        _musicPlayer.clip = songFile;
     }
 
     private void StartGame()
     {
         SetHitCircles();
-        StartCoroutine("UpdateCoroutine");
-        StartCoroutine("Checker");
+        StartCoroutine("UpdateCoroutine");  
+        StartCoroutine("MouseChecker");
     }
 
     private void RestartGame()
     {
-        score = 0;
-        healthBar = 1f;
-        gameOverText.text = "";
-        currentObject = 0;
+        _currentScore = 0;
+        _currentHealth = 1f;
+        _currentObject = 0;
         StartCoroutine("UpdateCoroutine");
-        StartCoroutine("Checker");
     }
 
     private IEnumerator UpdateCoroutine()
     {
         float zbuffer = -0.000001f;
         float bufferS = 0.0001f;
-        musicPlayer.PlayDelayed(musicOffset / 1000);
-        while (currentObject != osuObjects.Count - 1 && healthBar > 0f)
+        _musicPlayer.PlayDelayed(musicOffset / 1000);
+        while (_currentObject != _osuObjects.Count - 1 && _currentHealth > 0f)
         {
-            Circle current = osuObjects[currentObject];
-            double timer = musicPlayer.time;
-            double delay = (current.Time - GetPreemt()) / 1000f;
+            CircleClass current = _osuObjects[_currentObject];
+            double timer = _musicPlayer.time;
+            double delay = (current.Time - Preemt) / 1000f;
         
             if (timer >= delay)
             {
                 zbuffer += bufferS;
                 GameObject temp = Instantiate(circle, new Vector3(current.X, current.Y, zbuffer), Quaternion.identity);
                 var comp = temp.GetComponent<HitCircle>();
-                comp.Clicked += HitCircleClicked;
-                comp.Dead += HitCircleDead;
+                comp.Dead += NoteMiss;
                 comp.dieOffset = dieOffset;
-                currentObject++;
+                _currentObject++;
             }
             yield return null;
         }
 
-        while (musicPlayer.isPlaying && healthBar > 0)
+        while (_musicPlayer.isPlaying && _currentHealth > 0)
             yield return null;
          
-        musicPlayer.Stop();
+        _musicPlayer.Stop();
         StartCoroutine("Restart");
     }
 
-    private IEnumerator Restart()
+    private IEnumerator MouseChecker()
     {
-        if (healthBar <= 0)
-            gameOverText.text = "ВЫ ПРОИГРАЛИ!!";
-        else
-            gameOverText.text = "ВЫ ПОБЕДИЛИ!!";
-        yield return new WaitForSeconds(5f);
-        RestartGame();
-    }
-
-    private IEnumerator Checker()
-    {
-        while (musicPlayer.isPlaying)
+        while (_musicPlayer.isPlaying)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast (ray.origin, ray.direction, Mathf.Infinity);
@@ -145,8 +145,6 @@ public class GameManager : MonoBehaviour
                      Input.GetButtonDown("LeftClick") || 
                      Input.GetButtonDown("RightClick")))
                 {
-                    float scale = hit.collider.transform.GetComponent<HitCircle>().Scale;
-                    HitCircleClicked(scale);
                     Destroy(hit.transform.gameObject);
                 }
             }
@@ -154,55 +152,100 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void HitCircleClicked(float ptsScale)
+    private IEnumerator Restart()
     {
-        if (healthBar + healthClick < 1.0f)
-            healthBar += healthClick;
+        yield return new WaitForSeconds(5f);
+        RestartGame();
+    }
+
+    public void BadHit()
+    {
+        _currentScore += _badHitScore;
+        NoteHit();
+    }
+
+    public void NormalHit()
+    {
+        _currentScore += _normalHitScore;
+        NoteHit();
+    }
+
+    public void PerfectHit()
+    {
+        _currentScore += _perfectHitScore;
+
+        NoteHit();
+    }
+
+    private void NoteMiss()
+    {
+        float health = _currentHealth - healthMiss;
+        
+        if (health > 0)
+            _currentHealth = health;
         else
-            healthBar = 1;
-
-        score += (int)(baseClickPoints / ptsScale) * scoreScale;
-        hitPlayer.Play();
+            _currentHealth = 0;
+        
+        sliderBar.value = _currentHealth;
+        percentText.text = Percentage.ToString("P", CultureInfo.InvariantCulture);
+        _notePlayer.clip = missSound;
+        _notePlayer.Play();
     }
-    
-    private void HitCircleDead(float ptsScale)
+
+    private void NoteHit()
     {
-        if (healthBar - healthMiss > 0)
-            healthBar -= healthMiss;
+        float health = _currentHealth + healthClick;
+        
+        if (health < 1.0f)
+            _currentHealth = health;
         else
-            healthBar = 0;
-        
-        if (score > 0)
-            score -= (int)(baseMissPoints / ptsScale) * scoreScale;
+            _currentHealth = 1;
+
+        sliderBar.value = _currentHealth;
+        scoreText.text = $"{_currentScore:00000000}";
+        percentText.text = Percentage.ToString("P", CultureInfo.InvariantCulture);
+        _notePlayer.clip = hitSound;
+        _notePlayer.Play();
     }
 
-    public static float GetPreemt()
+    public float Preemt
     {
-        if (approachRate < 5)
+        get
         {
-            return 1200 + 600 * (5 - approachRate) / 5f;
-        }
+            if (_approachRate < 5)
+            {
+                return 1200 + 600 * (5 - _approachRate) / 5f;
+            }
 
-        if (approachRate == 5)
-        {
-            return 1200;
-        }
+            if (_approachRate == 5)
+            {
+                return 1200;
+            }
         
-        return 1200 - 750 * (approachRate - 5) / 5f;
+            return 1200 - 750 * (_approachRate - 5) / 5f;
+        }
     }
-    
-    public static float GetFadein()
-    {
-        if (approachRate < 5)
-        {
-            return 800 + 400 * (5 - approachRate) / 5f;
-        }
 
-        if (approachRate == 5)
+    public float FadeIn
+    {
+        get
         {
-            return 800;
-        }
+            if (_approachRate < 5)
+            {
+                return 800 + 400 * (5 - _approachRate) / 5f;
+            }
+
+            if (_approachRate == 5)
+            {
+                return 800;
+            }
         
-        return 800 - 500 * (approachRate - 5) / 5f;
+            return 800 - 500 * (_approachRate - 5) / 5f;
+        }
+    }
+
+    private float Percentage
+    {
+        get { return (float)_currentScore / (_currentObject * _perfectHitScore); }
     }
 }
